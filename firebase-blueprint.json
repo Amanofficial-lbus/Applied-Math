@@ -1,0 +1,83 @@
+{
+  "entities": {
+    "UserBackup": {
+      "title": "UserBackup",
+      "description": "Cloud backup of the user's study tracker progress, streaks, and completed topic IDs",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase user UID"
+        },
+        "currentStreak": {
+          "type": "integer",
+          "description": "Current active study streak in days"
+        },
+        "lastActiveDate": {
+          "type": "string",
+          "description": "Last active study date in YYYY-MM-DD format"
+        },
+        "freezesUsed": {
+          "type": "integer",
+          "description": "Number of streak freezes used"
+        },
+        "freezeShieldAvailable": {
+          "type": "boolean",
+          "description": "Whether streak freeze shield is active"
+        },
+        "bestStreak": {
+          "type": "integer",
+          "description": "Personal best streak achieved"
+        },
+        "totalXp": {
+          "type": "integer",
+          "description": "Total earned XP points"
+        },
+        "level": {
+          "type": "integer",
+          "description": "Calculated user level"
+        },
+        "rankTitle": {
+          "type": "string",
+          "description": "Rank title designation"
+        },
+        "estimatedMasteredHours": {
+          "type": "number",
+          "description": "Total estimated mastered study hours"
+        },
+        "completedTopicIds": {
+          "type": "array",
+          "description": "List of completed syllabus topic IDs"
+        },
+        "rolloverTopicIds": {
+          "type": "array",
+          "description": "List of rollover topic IDs"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp via FieldValue.serverTimestamp()"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Update timestamp via FieldValue.serverTimestamp()"
+        }
+      },
+      "required": [
+        "userId",
+        "currentStreak",
+        "totalXp",
+        "completedTopicIds",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/backups/{backupId}": {
+      "schema": "UserBackup",
+      "description": "User progress backup documents accessible strictly by the owning user"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny-all catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidUserBackup(data) {
+      return data.userId is string && data.userId.size() <= 128 &&
+             data.currentStreak is int && data.currentStreak >= 0 &&
+             data.totalXp is int && data.totalXp >= 0 &&
+             data.completedTopicIds is list && data.completedTopicIds.size() <= 200 &&
+             (!('rolloverTopicIds' in data) || (data.rolloverTopicIds is list && data.rolloverTopicIds.size() <= 200)) &&
+             (!('freezesUsed' in data) || data.freezesUsed is int) &&
+             (!('bestStreak' in data) || data.bestStreak is int) &&
+             (!('level' in data) || data.level is int) &&
+             (!('rankTitle' in data) || (data.rankTitle is string && data.rankTitle.size() <= 100)) &&
+             (!('lastActiveDate' in data) || (data.lastActiveDate is string && data.lastActiveDate.size() <= 30)) &&
+             (!('freezeShieldAvailable' in data) || data.freezeShieldAvailable is bool) &&
+             (!('estimatedMasteredHours' in data) || data.estimatedMasteredHours is number);
+    }
+
+    match /users/{userId}/backups/{backupId} {
+      allow get, list: if isSignedIn() && request.auth.uid == userId;
+
+      allow create: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'currentStreak', 'totalXp', 'completedTopicIds', 'createdAt', 'updatedAt']) &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().updatedAt <= request.time &&
+                       isValidUserBackup(incoming()) &&
+                       isValidId(backupId);
+
+      allow update: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().updatedAt <= request.time &&
+                       isValidUserBackup(incoming()) &&
+                       isValidId(backupId);
+
+      allow delete: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       isValidId(backupId);
+    }
+  }
+}

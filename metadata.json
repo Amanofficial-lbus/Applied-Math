@@ -1,0 +1,6 @@
+{
+  "name": "Applied Math",
+  "description": "Class 12 Applied Mathematics study tracker featuring 93 syllabus topics, automatic daily target engine, backlog rollover system, freeze shield streaks, Pomodoro focus timer with ambient sound, consistency heatmap, and formula library.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
