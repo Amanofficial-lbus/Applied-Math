@@ -77,6 +77,53 @@ jobs:
             touch .env
           fi
 
+      - name: Ensure app/google-services.json exists
+        run: |
+          if [ ! -f app/google-services.json ]; then
+            echo "Generating app/google-services.json for build..."
+            cat << 'EOF' > app/google-services.json
+          {
+            "project_info": {
+              "project_number": "356270744732",
+              "project_id": "gen-lang-client-0479052194",
+              "storage_bucket": "gen-lang-client-0479052194.firebasestorage.app"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:356270744732:android:3a50f8178206ecdd24f959",
+                  "android_client_info": {
+                    "package_name": "com.aistudio.appliedmath.trck"
+                  }
+                },
+                "oauth_client": [
+                  {
+                    "client_id": "356270744732-5b500urh3qdgld8oan9sm9t7ipl3h5nj.apps.googleusercontent.com",
+                    "client_type": 1,
+                    "android_info": {
+                      "package_name": "com.aistudio.appliedmath.trck",
+                      "certificate_hash": "c355a0221da3d29d45bbab1c6318c57e6182d4c2"
+                    }
+                  },
+                  {
+                    "client_id": "356270744732-ntm1faanl88p5js5dokpkfciubcracdh.apps.googleusercontent.com",
+                    "client_type": 3
+                  }
+                ],
+                "api_key": [
+                  {
+                    "current_key": "AIzaSyBJLRLMJ2ZJ7lUv_L7i7kMayUbuYM6ddik"
+                  }
+                ],
+                "services": {}
+              }
+            ],
+            "configuration_version": "1"
+          }
+          EOF
+          fi
+          ls -lh app/google-services.json
+
       - name: Restore or Generate Debug Keystore
         run: |
           if [ -f debug.keystore.base64 ]; then
@@ -88,12 +135,14 @@ jobs:
           fi
           ls -lh debug.keystore
 
-      - name: Build Debug APK with Memory Control
+      - name: Build Debug APK with Memory and Headless Guards
         run: |
           ./gradlew assembleDebug \
             --stacktrace \
             --no-daemon \
-            -Dorg.gradle.jvmargs="-Xmx3072m -XX:MaxMetaspaceSize=512m" \
+            -Djava.awt.headless=true \
+            -Dkotlin.compiler.execution.strategy=daemon \
+            -Dorg.gradle.jvmargs="-Xmx3072m -XX:MaxMetaspaceSize=512m -Djava.awt.headless=true" \
             -Dorg.gradle.workers.max=2 \
             -Dorg.gradle.parallel=false
 
